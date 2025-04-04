@@ -1,44 +1,45 @@
-# 1. Aşama: pnpm ve bağımlılıkların kurulması
-FROM node:18-alpine AS deps
-
-# pnpm yüklü değil, elle kuracağız
-RUN corepack enable && corepack prepare pnpm@9.4.0 --activate
-
+# 1. Katman: Bağımlılıkları kur
+FROM node:18-slim AS deps
 WORKDIR /app
 
-# package.json ve lock dosyasını kopyala
-COPY package.json pnpm-lock.yaml ./
-
-# node_modules kurulumu
-RUN pnpm install --frozen-lockfile
-
-# 2. Aşama: Projenin build edilmesi
-FROM node:18-alpine AS builder
-
-# Aynı şekilde pnpm tekrar yüklenmeli
+# pnpm yükle
 RUN corepack enable && corepack prepare pnpm@9.4.0 --activate
 
-WORKDIR /app
-
-COPY --from=deps /app/node_modules ./node_modules
+# Proje dosyalarını kopyala
 COPY . .
 
-# Remix + Vite ile build al
-RUN pnpm run build
+# Bağımlılıkları yükle
+RUN pnpm install --frozen-lockfile
 
-# 3. Aşama: Sadece statik dosyaların olduğu çalışma katmanı
-FROM node:18-alpine AS runner
+
+# 2. Katman: Build işlemi
+FROM node:18-slim AS builder
+WORKDIR /app
 
 RUN corepack enable && corepack prepare pnpm@9.4.0 --activate
 
+# Bağımlılıkları al
+COPY --from=deps /app /app
+
+# Build al
+RUN pnpm run build
+
+
+# 3. Katman: Sadece çalıştırma için minimal katman
+FROM node:18-slim AS runner
 WORKDIR /app
 
-# Prod node_modules gerekiyorsa buradan alınabilir
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=builder /app/build ./build
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/package.json ./package.json
+ENV NODE_ENV=production
+ENV PORT=3000
 
+# pnpm tekrar aktif et
+RUN corepack enable && corepack prepare pnpm@9.4.0 --activate
+
+# Build'lı projeyi kopyala
+COPY --from=builder /app /app
+
+# Port aç
 EXPOSE 3000
 
+# Railway burayı çalıştırır
 CMD ["pnpm", "preview"]
