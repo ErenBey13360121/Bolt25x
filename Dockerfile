@@ -2,6 +2,9 @@
 FROM node:18-slim AS deps
 WORKDIR /app
 
+# Gerekli sistem paketleri (git dahil)
+RUN apt-get update && apt-get install -y git
+
 # pnpm yükle
 RUN corepack enable && corepack prepare pnpm@9.4.0 --activate
 
@@ -16,12 +19,16 @@ RUN pnpm install --frozen-lockfile
 FROM node:18-slim AS builder
 WORKDIR /app
 
+# Gerekli sistem paketleri (git dahil)
+RUN apt-get update && apt-get install -y git
+
+# pnpm yükle
 RUN corepack enable && corepack prepare pnpm@9.4.0 --activate
 
-# Bağımlılıkları al
+# Bağımlılıkları ve kodu kopyala
 COPY --from=deps /app /app
 
-# Build al
+# Build işlemi
 RUN pnpm run build
 
 
@@ -32,14 +39,14 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 
-# pnpm tekrar aktif et
+# pnpm yükle
 RUN corepack enable && corepack prepare pnpm@9.4.0 --activate
 
-# Build'lı projeyi kopyala
+# Build edilmiş dosyaları kopyala
 COPY --from=builder /app /app
 
 # Port aç
 EXPOSE 3000
 
-# Railway burayı çalıştırır
+# Railway'in çalıştıracağı komut
 CMD ["pnpm", "preview"]
