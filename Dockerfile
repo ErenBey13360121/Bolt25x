@@ -3,22 +3,22 @@ FROM ${BASE} AS base
 
 WORKDIR /app
 
-# Install dependencies (this step is cached as long as the dependencies don't change)
+# Install dependencies
 COPY package.json pnpm-lock.yaml ./
-
-# corepack yerine doğrudan pnpm kuruyoruz
 RUN npm install -g pnpm && pnpm install
 
 # Copy the rest of your app's source code
 COPY . .
 
-# Expose the port the app runs on
-EXPOSE 5173
+# Build the app
+RUN pnpm run build
+
+# Expose the port the app runs on (Railway uses 3000 by default)
+EXPOSE 3000
 
 # Production image
 FROM base AS bolt-ai-production
 
-# Define environment variables with default values or let them be overridden
 ARG GROQ_API_KEY
 ARG HuggingFace_API_KEY
 ARG OPENAI_API_KEY
@@ -49,18 +49,12 @@ ENV WRANGLER_SEND_METRICS=false \
     DEFAULT_NUM_CTX=${DEFAULT_NUM_CTX} \
     RUNNING_IN_DOCKER=true
 
-# Pre-configure wrangler to disable metrics
-RUN mkdir -p /root/.config/.wrangler && \
-    echo '{"enabled":false}' > /root/.config/.wrangler/metrics.json
+# Production start
+CMD ["pnpm", "run", "preview"]
 
-RUN pnpm run build
-
-CMD [ "pnpm", "run", "dockerstart" ]
-
-# Development image
+# Development image (opsiyonel, Railway kullanmaz)
 FROM base AS bolt-ai-development
 
-# Define the same environment variables for development
 ARG GROQ_API_KEY
 ARG HuggingFace 
 ARG OPENAI_API_KEY
