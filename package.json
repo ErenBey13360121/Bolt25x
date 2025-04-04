@@ -11,10 +11,11 @@
   },
   "packageManager": "pnpm@9.4.0",
   "scripts": {
-    "dev": "node pre-start.cjs && remix vite:dev",
+    "dev": "node pre-start.cjs && remix vite:dev --host",
     "build": "remix vite:build",
     "preview": "vite preview --port 3000 --host",
-    "start": "pnpm run preview",
+    "start": "vite preview --port $PORT --host",
+    "start:windows": "vite preview --port 3000 --host",
     "lint": "eslint --cache --cache-location ./node_modules/.cache/eslint app",
     "lint:fix": "pnpm run lint -- --fix && prettier app --write",
     "test": "vitest --run",
