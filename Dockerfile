@@ -6,7 +6,8 @@ WORKDIR /app
 # Install dependencies (this step is cached as long as the dependencies don't change)
 COPY package.json pnpm-lock.yaml ./
 
-RUN corepack enable pnpm && pnpm install
+# corepack yerine doğrudan pnpm kuruyoruz
+RUN npm install -g pnpm && pnpm install
 
 # Copy the rest of your app's source code
 COPY . .
@@ -45,7 +46,7 @@ ENV WRANGLER_SEND_METRICS=false \
     TOGETHER_API_BASE_URL=${TOGETHER_API_BASE_URL} \
     AWS_BEDROCK_CONFIG=${AWS_BEDROCK_CONFIG} \
     VITE_LOG_LEVEL=${VITE_LOG_LEVEL} \
-    DEFAULT_NUM_CTX=${DEFAULT_NUM_CTX}\
+    DEFAULT_NUM_CTX=${DEFAULT_NUM_CTX} \
     RUNNING_IN_DOCKER=true
 
 # Pre-configure wrangler to disable metrics
@@ -54,7 +55,7 @@ RUN mkdir -p /root/.config/.wrangler && \
 
 RUN pnpm run build
 
-CMD [ "pnpm", "run", "dockerstart"]
+CMD [ "pnpm", "run", "dockerstart" ]
 
 # Development image
 FROM base AS bolt-ai-development
@@ -85,7 +86,7 @@ ENV GROQ_API_KEY=${GROQ_API_KEY} \
     TOGETHER_API_BASE_URL=${TOGETHER_API_BASE_URL} \
     AWS_BEDROCK_CONFIG=${AWS_BEDROCK_CONFIG} \
     VITE_LOG_LEVEL=${VITE_LOG_LEVEL} \
-    DEFAULT_NUM_CTX=${DEFAULT_NUM_CTX}\
+    DEFAULT_NUM_CTX=${DEFAULT_NUM_CTX} \
     RUNNING_IN_DOCKER=true
 
 RUN mkdir -p ${WORKDIR}/run
