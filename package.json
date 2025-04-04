@@ -12,7 +12,7 @@
   "packageManager": "pnpm@9.4.0",
   "scripts": {
     "dev": "node pre-start.cjs && remix vite:dev --host",
-    "build": "NODE_OPTIONS='--max-old-space-size=1024' remix vite:build",
+    "build": "node --max-old-space-size=2048 ./node_modules/.bin/remix vite:build",
     "preview": "vite preview --port 3000 --host",
     "start": "pnpm run build && pnpm run preview",
     "start:windows": "vite preview --port 3000 --host",
@@ -28,6 +28,9 @@
     "dockerrun": "docker run -it -d --name bolt-ai-live -p 3000:3000 --env-file .env.local bolt-ai",
     "dockerstart": "bindings=$(./bindings.sh) && wrangler pages dev ./build/client $bindings --ip 0.0.0.0 --port 5173 --no-show-interactive-dev-session",
     "prepare": "husky"
+  },
+  "resolutions": {
+    "@typescript-eslint/utils": "^8.0.0-alpha.30"
   },
   "dependencies": {
     "@ai-sdk/amazon-bedrock": "1.0.6",
@@ -131,8 +134,5 @@
     "vitest": "^2.1.7",
     "wrangler": "^3.91.0",
     "zod": "^3.23.8"
-  },
-  "resolutions": {
-    "@typescript-eslint/utils": "^8.0.0-alpha.30"
   }
 }
