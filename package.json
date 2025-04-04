@@ -12,7 +12,7 @@
   "packageManager": "pnpm@9.4.0",
   "scripts": {
     "dev": "node pre-start.cjs && remix vite:dev --host",
-    "build": "node --max-old-space-size=2048 ./node_modules/.bin/remix vite:build",
+    "build": "remix vite:build",
     "preview": "vite preview --port 3000 --host",
     "start": "pnpm run build && pnpm run preview",
     "start:windows": "vite preview --port 3000 --host",
